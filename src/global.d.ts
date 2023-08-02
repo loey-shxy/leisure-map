@@ -1,0 +1,8 @@
+declare module 'nprogress'
+declare module 'qs'
+declare module 'lodash'
+declare module 'downloadjs'
+declare module 'js-cookie'
+declare module './utils/lib'
+declare module './interface'
+declare module './hooks'
