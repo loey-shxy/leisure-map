@@ -1,113 +1,72 @@
 <template >
-  <q-layout id="main-layout">
-    <q-header class="bg-teal">
-      <q-toolbar>
-        <q-btn
-          class="desktop-menu"
-          flat
-          dense
-          round
-          icon="menu"
-          aria-label="Menu"
-          @click="leftDrawerOpen = !leftDrawerOpen"
-          ></q-btn>
-          <q-img height="40px" width="40px" />
-          <q-toolbar-title class="q-pl-xs">在路上</q-toolbar-title>
-          <q-btn flat round dense icon="account_circle" to="/account" />
-          <!-- <q-btn to="/auth" flat round dense icon="login" /> -->
-      </q-toolbar>
-    </q-header>
-    <q-drawer
-        v-model="leftDrawerOpen"
-        show-if-above
-        :width="250"
+  <div class="main-layout">
+    <var-app-bar
+      image="https://varlet.gitee.io/varlet-ui/tree.jpeg"
+      image-linear-gradient="to right top, rgba(29, 68, 147, 0.5) 0%, rgba(74, 198, 170, 0.9) 100%"
       >
-        <q-scroll-area id="menu-section">
-          <q-list padding>
-            <q-item clickable v-ripple to="/map">
-              <q-item-section avatar>
-                <q-icon name="explore" />
-              </q-item-section>
-              <q-item-section> 地 图 </q-item-section>
-            </q-item>
+        在路上
+        <template #left>
+          <var-button round text color="transparent" text-color="#fff">
+            <div class="logo">
+              <img src="../assets/images/logo.png" />
+            </div>
+          </var-button>
+        </template>
+        <template #right>
+          <var-button round text color="transparent" text-color="#fff">
+            <var-icon name="account-circle" size="24" />
+          </var-button>
+        </template>
+      </var-app-bar>
 
-            <q-item clickable v-ripple to="/route">
-              <q-item-section avatar>
-                <q-icon name="directions" />
-              </q-item-section>
-
-              <q-item-section> 线 路 </q-item-section>
-            </q-item>
-
-            <q-item clickable v-ripple to="/recommend">
-              <q-item-section avatar>
-                <q-icon name="recommend" />
-              </q-item-section>
-
-              <q-item-section> 推 荐 </q-item-section>
-            </q-item>
-
-            <q-item clickable v-ripple to="/account">
-              <q-item-section avatar>
-                <q-icon name="account_circle" />
-              </q-item-section>
-              <q-item-section> 我 的 </q-item-section>
-            </q-item>
-
-          </q-list>
-        </q-scroll-area>
-
-          <div class="bg-dark text-white q-pa-md absolute-top area-height">
-            <q-item-section avatar class="row">
-                <!-- <div v-if="userStore.getEmail">
-                  <q-icon size="20px" name="verified_user" />
-                  <span  class="q-pl-sm">{{ userStore.getFirstName }} {{ userStore.getLastName }}</span>
-                </div> -->
-                <!-- <div v-else> -->
-                  <q-icon size="20px" name="do_not_disturb" />
-                  <!-- <span  class="q-pl-sm">No user logged in</span> -->
-                <!-- </div> -->
-            </q-item-section>
-          </div>
-      </q-drawer>
-
-    <q-page-container>
+    <div class="page-container">
       <router-view />
-    </q-page-container>
+    </div>
 
-    <q-footer id="mobile-menu" elevated class="bg-white">
-      <q-tabs class="bg-teal text-light shadow-2">
-        <q-route-tab to="/map" label="地图" name="explore" icon="explore" class="icon-size"/>
-        <q-route-tab to="/route" label="线路" name="directions" icon="directions" class="icon-size"/>
-        <q-route-tab to="/recommend" label="推荐" name="recommend" icon="recommend" class="icon-size"/>
-        <q-route-tab to="/account" label="我的" name="我的" icon="account_circle" class="icon-size"/>
-      </q-tabs>
-    </q-footer>
-  </q-layout>
+    <PageFooter>
+      <var-style-provider 
+        :style-vars="{
+        }">
+        <var-bottom-navigation v-model:active="active">
+          <var-bottom-navigation-item label="地图" name="map" icon="map-marker-radius" @click="changeRoute" />
+          <var-bottom-navigation-item label="路线" name="route" icon="star" @click="changeRoute" />
+          <var-bottom-navigation-item label="推荐" name="recommend" icon="thumb-up" @click="changeRoute" />
+          <var-bottom-navigation-item label="我的" name="account" icon="account-circle" @click="changeRoute" />
+        </var-bottom-navigation>
+      </var-style-provider>
+    </PageFooter>
+  </div>
 </template>
 <script setup lang="ts" name="main-layout">
-import { ref } from 'vue';
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import PageFooter from './page-footer.vue'
 
-const leftDrawerOpen = ref(false)
+const router = useRouter()
+const active = ref('map')
+
+const changeRoute = (active: string | number) => {
+  router.push({ name: active as string })
+}
 </script>
-<style lang="scss">
-.area-height {
-  height: 50px;
-}
-#menu-section {
-  height: calc(100% - 50px);
-  margin-top: 50px;
-  border-right: 1px solid #ddd
-}
-@media (min-width: $breakpoint-sm-max) {
-  #mobile-menu {
-    display: none;
+<style lang="scss" scoped>
+.main-layout {
+  .logo {
+    width: 30px;
+    height: 30px;
+    img {
+      width: 100%;
+    }
   }
-}
-
-@media (max-width: $breakpoint-sm-max) {
-  .desktop-menu {
-    display: none;
+  &:deep(.var-style-provider) {
+    width: 100%;
+    display: flex;
+  }
+  .page-container {
+    position: fixed;
+    top: 55px;
+    bottom: 50px;
+    width: 100%;
   }
 }
 </style>

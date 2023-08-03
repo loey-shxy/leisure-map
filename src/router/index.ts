@@ -6,7 +6,7 @@ const router = createRouter({
     history: createWebHashHistory(),
     routes: [
       {
-        path: '/map',
+        path: '',
         name: 'map',
         component: async () => await import('@/pages/map.vue'),
         meta: {

@@ -1,7 +1,5 @@
 <template>
-  <q-page>
     <div class="amap-container" id="amap"></div>
-  </q-page>
 </template>
 <script setup lang="ts" name="map">
 import { shallowRef, onMounted } from 'vue'

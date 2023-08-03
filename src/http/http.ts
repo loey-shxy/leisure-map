@@ -2,9 +2,7 @@ import es6Promise from 'es6-promise'
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse} from 'axios'
 import qs from 'qs'
 import { isArray, merge, isObject } from 'lodash'
-import { useQuasar } from 'quasar'
 
-const $q = useQuasar()
 es6Promise.polyfill()
 
 /**
@@ -85,7 +83,7 @@ export default class Http {
     if (requestConfig.loading) {
       clearTimeout(loadingTimer)
       loadingOpenedCount++
-      $q.loading.show({message: this.loadingText})
+      // $q.loading.show({message: this.loadingText})
     }
     try {
       const options: RequestConfig = merge({}, {
@@ -123,7 +121,7 @@ export default class Http {
         loadingOpenedCount--
         if (loadingOpenedCount <= 0) {
           loadingTimer = setTimeout(() => {
-            $q.loading.hide()
+            // $q.loading.hide()
           }, 100)
         }
       }

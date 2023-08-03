@@ -1,7 +1,7 @@
-import { AppHttp } from '../http/request';
-import { handlerTableData } from '../http/request-util';
-import { FavoriteRoute } from '../interface/route';
-import { Paging } from '../interface/common';
+import { AppHttp } from '@/http/request';
+import { handlerTableData } from '@/http/request-util';
+import { FavoriteRoute } from '@/interface/route';
+import { Paging } from '@/interface/common';
 
 export const apiFavoriteRouteList = async (
   params?: any, 

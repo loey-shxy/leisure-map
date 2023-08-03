@@ -1,8 +1,5 @@
 import { RequestConfig, Response } from './http';
 import { hasToken, getToken, getTokenKey } from './auth';
-import { useQuasar } from 'quasar';
-
-const $q = useQuasar()
 
 let tokenIsInvalid = false
 
@@ -50,7 +47,7 @@ export const responseInterceptorRejected = (err: any) => {
   }
 
   if (status !== 401) {
-    $q.loading.show({ message })
+    // $q.loading.show({ message })
   }
   return response
 }
