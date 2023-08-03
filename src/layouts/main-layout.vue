@@ -8,7 +8,7 @@
         <template #left>
           <var-button round text color="transparent" text-color="#fff">
             <div class="logo">
-              <img src="../assets/images/logo.png" />
+              <img src="@/assets/images/logo.png" />
             </div>
           </var-button>
         </template>
@@ -26,6 +26,10 @@
     <PageFooter>
       <var-style-provider 
         :style-vars="{
+          '--bottom-navigation-background-color': 'var(--color-success)',
+          '--bottom-navigation-item-active-background-color': 'transparent',
+          '--bottom-navigation-item-active-color': '#fff',
+          '--bottom-navigation-item-inactive-color': '#ccc'
         }">
         <var-bottom-navigation v-model:active="active">
           <var-bottom-navigation-item label="地图" name="map" icon="map-marker-radius" @click="changeRoute" />
@@ -39,15 +43,21 @@
 </template>
 <script setup lang="ts" name="main-layout">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import PageFooter from './page-footer.vue'
 
 const router = useRouter()
+const route = useRoute()
 const active = ref('map')
+
+watch(route, () => {
+  active.value = route.matched[0].name as string
+})
 
 const changeRoute = (active: string | number) => {
   router.push({ name: active as string })
 }
+
 </script>
 <style lang="scss" scoped>
 .main-layout {
@@ -67,6 +77,7 @@ const changeRoute = (active: string | number) => {
     top: 55px;
     bottom: 50px;
     width: 100%;
+    overflow-y: auto;
   }
 }
 </style>

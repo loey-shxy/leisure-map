@@ -7,8 +7,9 @@ export interface FavoriteRoute {
 }
 
 export interface Collections {
-  id: number;
-  county: string;
+  id?: number
+  county: string
+  desc: string
 }
 
 export interface AddRouteParams {

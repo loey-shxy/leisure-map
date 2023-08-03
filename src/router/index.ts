@@ -16,10 +16,11 @@ const router = createRouter({
       {
         path: '/route',
         name: 'route',
+        redirect: '/route/route-list',
         component: async () => await import('@/pages/route.vue'),
         children: [
           { 
-            path: '', 
+            path: 'route-list', 
             name: 'route-list', 
             component: async () => await import('@/pages/route/route-list.vue'),
             meta: {

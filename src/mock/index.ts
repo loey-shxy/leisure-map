@@ -15,7 +15,8 @@ export default [
             'collections|4': [
               {
                 id: '@increment',
-                county: '@county'
+                county: '@county',
+                desc: '@cword(20)'
               }
             ]
           }
