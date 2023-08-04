@@ -1,80 +1,93 @@
 <template>
   <div class="add-route">
     <var-form
-      ref="form"
+      ref="formRef"
       scroll-to-error="start"
     >
-        <var-space direction="column" :size="[16, 0]">
-          <var-input 
-            :rules="[v => !!v || '起点不能为空']"
-            v-model="form.from"
-            @focus="inputFocus('from')"
-            size="small"
+      <var-space direction="column" :size="[16, 0]">
+        <var-input 
+          placeholder="名称"
+          :rules="[v => !!v || '名称不能为空']"
+          size="small"
+          v-model="form.name"
+        >
+        </var-input>
+
+        <var-input 
+          placeholder="起点"
+          :rules="[v => !!v || '起点不能为空']"
+          size="small"
+          readonly
+          v-model="form.from"
+          @click="inputFocus('from')"
+        >
+        </var-input>
+        
+        <var-steps 
+          direction="vertical" 
+          active=""
+          inactive-color="#e99eb4"
+        >
+          <var-step
+            v-for="(col, index) in pathway" 
+            :key="index"
+            inactive-icon="map-marker-outline"
           >
-            <template #prepend-icon>
-              <img class="prepend-icon" src="@/assets/images/start.png" />
-            </template>
-          </var-input>
-          
-          <var-steps 
-            direction="vertical" 
-            active=""
-            inactive-color="#e99eb4"
-          >
-            <var-step
-              v-for="(col, index) in collections" 
-              :key="index"
-              inactive-icon="map-marker-outline"
-            >
-              <div class="collection">
-                <div class="input-wrap">
-                  <var-input 
-                    placeholder="地名"
-                    v-model="col.county"
-                    size="small"
-                    @focus="inputFocus(`${index}county`)"
-                  />
-                  <var-input 
-                    v-model="col.desc"
-                    textarea 
-                    rows="5"
-                    placeholder="备注"
-                    size="small"
-                    @focus="inputFocus(`${index}desc`)"
-                  />
-                </div>
-                <div class="delete-wrap">
-                  <var-icon 
-                    name="trash-can-outline" 
-                    color="var(--color-danger)"
-                    @click="delCollection(index)"
-                  />
-                </div>
+            <div class="collection">
+              <div class="input-wrap">
+                <var-input 
+                  placeholder="地名"
+                  v-model="col.name"
+                  :rules="[v => !!v || '地名不能为空']"
+                  size="small"
+                  readonly
+                  @click="inputFocus(index)"
+                />
+                <var-input 
+                  v-model="col.desc"
+                  textarea 
+                  rows="5"
+                  placeholder="备注"
+                  size="small"
+                />
               </div>
-            </var-step>
-          </var-steps>
+              <div class="delete-wrap">
+                <var-icon 
+                  name="trash-can-outline" 
+                  color="var(--color-danger)"
+                  @click="delCollection(index)"
+                />
+              </div>
+            </div>
+          </var-step>
+        </var-steps>
 
-          <div class="btn">
-            <var-button type="primary" size="small" @click="addOther">添加途径地</var-button>
-          </div>
+        <div class="btn">
+          <var-button 
+            type="primary" 
+            size="small" 
+            @click="addOther"
+          >添加途径地</var-button>
+        </div>
 
-          <var-input
-            :rules="[v => !!v || '终点不能为空']"
-            v-model="form.to"
-            size="small"
-            @focus="inputFocus('to')"
-          >
-            <template #prepend-icon >
-              <img class="prepend-icon" src="@/assets/images/end.png" />
-            </template>
-          </var-input>
-          
-        </var-space>
-      </var-form>
-      <SearchPlace 
-        v-show="popupShow" 
-        @cancel="popupShow = false"
-      />
+        <var-input
+          placeholder="终点"
+          :rules="[v => !!v || '终点不能为空']"
+          v-model="form.to"
+          size="small"
+          readonly
+          @click="inputFocus('to')"
+        >
+        </var-input>
+      </var-space>
+    </var-form>
+
+    <SearchPlace 
+      v-if="popupShow" 
+      :default-place="focusLocation"
+      @cancel="closePopup"
+      @confirm="confirmLocation"
+    />
   </div>
   <div class="submit-btn">
     <var-button type="primary" block>提交</var-button>
@@ -82,43 +95,76 @@
 </template>
 <script setup name="add-route" lang="ts">
 import { ref, reactive } from 'vue'
-import { AddRouteParams, Collections } from '@/interface/route'
+import { AddFavoriteRoute, Pathway, MapSearchResult } from '@/interface/route'
 import SearchPlace from './components/search-place.vue';
 
+// 显示地点搜索地图
 const popupShow = ref(false)
-const focusInput = ref('')
-const form = reactive<AddRouteParams>({
+// 存储当前操作的key
+const focusInput = ref<string | number>('')
+const formRef = ref(null)
+
+const form = reactive<AddFavoriteRoute>({
   name: '',
   from: '',
   to: '',
-  collections: []
+  fromLocation: [],
+  toLocation: []
 })
 
+const focusLocation = reactive<{ name: string; location: number[] }>({
+  name: '',
+  location: []
+})
 
-const collections = ref<Array<Collections>>([])
+const pathwayRef = ref<Array<Pathway>>([])
+const pathway = pathwayRef.value
 
+/** 
+ * @description 添加新的途径地
+*/
 const addOther = () => {
-  collections.value.push({
-    county: '',
-    desc: ''
+  pathway.push({
+    name: '',
+    desc: '',
+    location: []
   })
 }
 
 const delCollection = (index: number) => {
-  collections.value.splice(index, 1)
+  pathway.splice(index, 1)
 }
 
-const setPlace = (params: {location: string; point: number[]}) => {
-  console.log(params)
+const confirmLocation = (params: MapSearchResult) => {
+  closePopup()
+  if (typeof focusInput.value === 'number') {
+    pathway[focusInput.value].name = `${params.district}${params.name}`
+    pathway[focusInput.value].location = params.location
+  } else {
+    form[focusInput.value] = `${params.district}${params.name}`
+    form[`${focusInput.value}Location`] = params.location
+  }
 }
 
-const inputFocus = (key: string) => {
+const closePopup = () => {
+  popupShow.value = false
+}
+
+const inputFocus = (key: string | number) => {
   focusInput.value = key
   popupShow.value = true
-}
+  if (typeof key === 'number' && !pathway[key].name) {
+    focusLocation.name = pathway[key].name
+    focusLocation.location = pathway[key].location
+  } else {
+    focusLocation.name = form[key]
+    focusLocation.location = form[`${key}Location`]
+  }
+} 
 const addRoute = () => {
 
 }
+
 </script>
 <style lang="scss" scoped>
 .add-route {
@@ -126,6 +172,7 @@ const addRoute = () => {
   position: relative;
   .prepend-icon {
     width: 16px;
+    margin-right: 10px;
   }
   .btn {
     text-align: right;

@@ -44,8 +44,10 @@
             </template>
             <template #extra>
               <var-space>
-                <var-button text type="warning">地图</var-button>
-                <var-button text type="warning">删除</var-button>
+                <var-icon name="map-marker-radius" color="var(--color-primary)" @click="toMap(item)" />
+                <var-icon v-if="item.favorite" name="heart" color="var(--color-warning)" />
+                <var-icon v-else name="heart-outline" color="var(--color-warning)" />
+                <var-icon name="trash-can-outline" color="var(--color-danger)" @click="del(item)" />
               </var-space>
             </template>
             <template #floating-content>
@@ -57,12 +59,12 @@
                   inactive-color="#e99eb4"
                 >
                   <var-step
-                    v-for="col in item.collections" 
+                    v-for="col in item.pathway" 
                     :key="col.id"
                     inactive-icon="map-marker-outline"
                   >
                     <div class="collection">
-                      <div class="location">{{ col.county }}</div>
+                      <div class="location">{{ col.name }}</div>
                       <div class="desc">{{ col.desc }}</div>
                     </div>
                   </var-step>
@@ -77,7 +79,7 @@
       :duration="300"
       right="16"
       bottom="100"
-      />
+    />
   </div>
 </template>
 <script setup lang="ts">
@@ -85,41 +87,55 @@ import { useRouter } from 'vue-router'
 import { ref } from 'vue'
 import useTable from '@/hooks/useTable'
 import { FavoriteRoute } from '@/interface/route'
-import { apiFavoriteRouteList} from '@/apis/route'
+import { apiRouteList } from '@/apis/route'
 
 const router = useRouter()
 const loading = ref(false)
 const finished = ref(false)
 const floating = reactive<{ [key: number|string]: boolean }>({})
-const colStep = ref('')
-
+// 路线列表
 const favoriteRoutes = ref<Array<FavoriteRoute>>([])
 
 const { tableData, searchTable } = useTable<FavoriteRoute>(
   {},
-  apiFavoriteRouteList
+  apiRouteList
 )
 
-watch(() => tableData.list, () => {
-  favoriteRoutes.value = [...favoriteRoutes.value, ...tableData.list]
-  favoriteRoutes.value.forEach(item => {
-    floating[item.id] = false
-  })
-})
-
-const loadList = async () => {
+const loadList = () => {
   if (favoriteRoutes.value.length < tableData.tableParams.total) {
     tableData.tableParams.pageNum++
     searchTable()
-    loading.value = false
   } else {
     finished.value = true
   }
+  loading.value = false
 }
 
 const toAdd = () => {
   router.push({ name: 'add-route' })
 }
+
+const toMap = (item: FavoriteRoute) => {
+  router.push({
+    name: 'map',
+    query: { routeId: item.id }
+  })
+}
+
+const del = (item: FavoriteRoute) => {
+  // 
+}
+
+watch(
+  () => tableData.list, 
+  () => {
+    favoriteRoutes.value = [...favoriteRoutes.value, ...tableData.list]
+    favoriteRoutes.value.forEach(item => {
+      floating[item.id] = false
+    })
+  }
+)
+
 </script>
 <style lang="scss" scoped>
 .favorite-routes {

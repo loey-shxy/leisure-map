@@ -1,20 +1,35 @@
 export interface FavoriteRoute {
-  id: number;
+  id: number
   name: string
   from: string
   to: string
-  collections: Collections[]
+  fromLocation: number[]
+  toLocation: number[]
+  pathway: Pathway[]
+  favorite?: number
+  [key: string]: any
+}
+export interface AddFavoriteRoute {
+  name: string
+  from: string
+  to: string
+  fromLocation: number[]
+  toLocation: number[]
+  [key: string]: any
 }
 
-export interface Collections {
+export interface Pathway {
   id?: number
-  county: string
+  name: string
   desc: string
+  location: number[]
+  [key: string]: any
 }
 
-export interface AddRouteParams {
+export interface MapSearchResult {
+  id: string
   name: string
-  from: string
-  to: string
-  collections: Collections[]
+  location: number[]
+  address: string
+  district: string
 }
