@@ -1,9 +1,9 @@
 <template>
   <div>
-    Recommend
+    Nearby
   </div>
 </template>
-<script setup>
+<script setup lang="ts" name="nearby">
 </script>
 <style lang="scss" scoped>
   

@@ -2,11 +2,14 @@
     <div class="amap-container" id="amap"></div>
 </template>
 <script setup lang="ts" name="map">
-import { shallowRef, onMounted } from 'vue'
-import AMapLoader from '@amap/amap-jsapi-loader'
 import { useRoute } from 'vue-router'
 import { FavoriteRoute } from '@/interface/route'
 import { apiFavoriteRouteList, apiRouteInfoById } from '@/apis/route'
+import useAMap from '@/hooks/useAMap'
+import { ref } from 'vue'
+
+let map = ref()
+const { initMap } = useAMap()
 const colors = ['#3a7afe', '#00c48f', '#ff9f00']
 
 const route = useRoute()
@@ -14,19 +17,16 @@ const routeId = ref<number>()
 
 const routeList = ref<Array<FavoriteRoute>>([])
 
-const map = shallowRef()
-
-onMounted(() => {
-  initMap()
+onMounted(async () => {
+  const { mapValue } = await initMap()
+  map = mapValue
 })
-
 /**
  * @description 获取路线详情
  */
 const getRouteInfo = async () => {
   const data = await apiRouteInfoById({ id: routeId.value as number })
   routeList.value = [data]
-  console.log(routeList.value)
 }
 
 /**
@@ -44,7 +44,7 @@ const polylines = ref<any[]>([])
  */
 const addRouteToMap = () => {
   routeList.value.forEach((route, index) => {
-    const points: Array<Array<number>> = []
+    const points: AMap.LngLatLike[] = []
     const startIcon = new AMap.Icon({
       size: new AMap.Size(25, 34),
       image: '//a.amap.com/jsapi_demos/static/demo-center/icons/dir-marker.png',
@@ -57,14 +57,14 @@ const addRouteToMap = () => {
       offset: new AMap.Pixel(-13, -30)
     });
     locationMarker.value.push(startMarker)
-    points.push(route.fromLocation)
+    points.push(new AMap.LngLat(route.fromLocation[0], route.fromLocation[1]))
     
     route.pathway.forEach(pathway => {
       const marker = new AMap.Marker({
         position: new AMap.LngLat(pathway.location[0], pathway.location[1]),
       })
       locationMarker.value.push(marker)
-      points.push(pathway.location)
+      points.push(new AMap.LngLat(pathway.location[0], pathway.location[1]))
     })
 
     const endIcon = new AMap.Icon({
@@ -79,10 +79,10 @@ const addRouteToMap = () => {
       offset: new AMap.Pixel(-13, -30)
     });
     locationMarker.value.push(endMarker)
-    points.push(route.toLocation)
+    points.push(new AMap.LngLat(route.toLocation[0], route.toLocation[1]))
 
     const polyline = new AMap.Polyline({
-      path: points as any,
+      path: points,
       isOutline: true,
       outlineColor: '#ffeeff',
       borderWeight: 1,
@@ -103,24 +103,6 @@ const addRouteToMap = () => {
   map.value.setFitView()
 }
 
-const initMap = () => {
-  AMapLoader.load({
-    key: import.meta.env.VITE_APP_AMAP_KEY,
-    version: '2.0',
-    AMapUI: {
-      version: '1.1',
-      plugins: []
-    },
-    Loca: {
-      version: '2.0.0'
-    }
-  }).then((AMap) => {
-    map.value = new AMap.Map('amap', {
-      center: JSON.parse(import.meta.env.VITE_APP_MAP_CENTER),
-      zoom: import.meta.env.VITE_APP_MAP_ZOOM
-    })
-  })
-}
 
 watch(
   () => route.query,
@@ -136,12 +118,15 @@ watch(
 )
 
 watch(
-  () => [map.value, routeList.value],
-  () => {
-    if (map.value && routeList.value.length) {
-      addRouteToMap()
-    }
-  }
+  [map.value, routeList.value],
+  async () => {
+    setTimeout(() => {
+      if (map.value && routeList.value.length) {
+        addRouteToMap()
+      }
+    }, 1000)
+  },
+  {deep: true, immediate: true}
 )
 </script>
 <style lang="scss" scoped>

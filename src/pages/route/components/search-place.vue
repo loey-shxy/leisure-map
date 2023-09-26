@@ -27,15 +27,29 @@
 </template>
 <script setup lang="ts" name="search-place">
 import { ref } from 'vue'
-import AMapLoader from '@amap/amap-jsapi-loader'
 import { debounce } from 'lodash'
 import { MapSearchResult } from '@/interface/route'
-import placeData from './data'
+import useAMap from '@/hooks/useAMap'
 
-window._AMapSecurityConfig = {
-  // 设置安全密钥
-  securityJsCode: import.meta.env.VITE_APP_AMAP_SECURITY_KEY,
-};
+let map  = ref()
+let AMap = ref()
+const { initMap } = useAMap('add-map', ['AMap.PlaceSearch', 'AMap.AutoComplete'])
+
+onMounted(async () => {
+  const { mapValue, AMapValue } = await initMap()
+  map = mapValue
+  AMap = AMapValue
+  if (props.defaultPlace.name) {
+    placeMarker.value = map.value.add(new AMap.value.Marker({
+      position: new AMap.value.LngLat(props.defaultPlace.location[0], props.defaultPlace.location[1]),
+    }));
+    map.value.setZoomAndCenter(18, props.defaultPlace.location)
+  }
+
+  autoComplete.value = new AMap.value.AutoComplete({
+    input: 'searchinput'
+  })
+})
 
 const props = defineProps({
   defaultPlace: {
@@ -54,65 +68,23 @@ const showResult = ref(false)
 // 选中的地址
 let selectPlace = reactive<MapSearchResult>({} as MapSearchResult)
 
-onMounted(() => {
-  setTimeout(() => {
-    initMap()
-  }, 500)
-})
-
-const map = shallowRef()
 const autoComplete = shallowRef()
 const placeMarker = shallowRef()
-/**
- * @description 初始化地图
- */
-const initMap = () => {
-  AMapLoader.load({
-    key: import.meta.env.VITE_APP_AMAP_KEY,
-    version: '2.0',
-    plugins: ['AMap.PlaceSearch', 'AMap.AutoComplete'],
-    AMapUI: {
-      version: '1.1',
-      plugins: []
-    },
-    Loca: {
-      version: '2.0.0'
-    },
-  }).then((AMap) => {
-    const center = JSON.parse(import.meta.env.VITE_APP_MAP_CENTER)
-    map.value = new AMap.Map('add-map', {
-      center,
-      zoom: import.meta.env.VITE_APP_MAP_ZOOM
-    })
-
-    if (props.defaultPlace.name) {
-      placeMarker.value = map.value.add(new AMap.Marker({
-          position: new AMap.LngLat(props.defaultPlace.location[0], props.defaultPlace.location[1]),
-        }));
-        map.value.setZoomAndCenter(18, props.defaultPlace.location)
-    }
-
-    // autoComplete.value = new AMap.AutoComplete({
-    //   input: 'searchinput'
-    // })
-  })
-}
 
 /**
  * @description 模糊搜索 
  */
 const searchChange = debounce(() => {
-  // if (searchKeyword.value.length >= 2) {
-    // autoComplete.value.search(searchKeyword.value, (status: string, result: any) => {
-          // searchResults.value = result.tips
-    // })
-      searchResults.value = placeData as MapSearchResult[]
-      showResult.value = true;
+  if (searchKeyword.value.length >= 2) {
+    autoComplete.value.search(searchKeyword.value, (status: string, result: any) => {
+          searchResults.value = result.tips
+    })
+    showResult.value = true;
       
-      if (searchResults.value.length) {
-        map.value.setZoomAndCenter(16, searchResults.value[0].location)
-      }
-  // }
+    if (searchResults.value.length) {
+      map.value.setZoomAndCenter(16, searchResults.value[0].location)
+    }
+  }
 }, 500)
 
 /**
@@ -126,8 +98,8 @@ const select = (location: MapSearchResult) => {
   showResult.value = false
   selectPlace = location
   searchResults.value = []
-  placeMarker.value = map.value.add(new AMap.Marker({
-      position: new AMap.LngLat(location.location[0], location.location[1]),
+  placeMarker.value = map.value.add(new AMap.value.Marker({
+      position: new AMap.value.LngLat(location.location[0], location.location[1]),
   }))
   searchKeyword.value = `${location.district}${location.name}`;
   map.value.setZoomAndCenter(18, location.location)

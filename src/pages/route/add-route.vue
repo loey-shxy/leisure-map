@@ -17,9 +17,8 @@
           placeholder="起点"
           :rules="[v => !!v || '起点不能为空']"
           size="small"
-          readonly
           v-model="form.from"
-          @click="inputFocus('from')"
+          @focus="inputFocus('from')"
         >
         </var-input>
         
@@ -40,8 +39,7 @@
                   v-model="col.name"
                   :rules="[v => !!v || '地名不能为空']"
                   size="small"
-                  readonly
-                  @click="inputFocus(index)"
+                  @focus="inputFocus(index)"
                 />
                 <var-input 
                   v-model="col.desc"
@@ -75,8 +73,7 @@
           :rules="[v => !!v || '终点不能为空']"
           v-model="form.to"
           size="small"
-          readonly
-          @click="inputFocus('to')"
+          @focus="inputFocus('to')"
         >
         </var-input>
       </var-space>

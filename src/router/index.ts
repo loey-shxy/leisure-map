@@ -15,13 +15,11 @@ const router = createRouter({
       },
       {
         path: '/route',
-        name: 'route',
-        redirect: '/route/route-list',
         component: async () => await import('@/pages/route.vue'),
         children: [
           { 
-            path: 'route-list', 
-            name: 'route-list', 
+            path: '', 
+            name: 'route', 
             component: async () => await import('@/pages/route/route-list.vue'),
             meta: {
               title: 'Route List'
@@ -41,11 +39,11 @@ const router = createRouter({
         }
       },
       {
-        path: '/recommend',
-        name: 'recommend',
-        component: async () => await import('@/pages/recommend.vue'),
+        path: '/nearby',
+        name: 'nearby',
+        component: async () => await import('@/pages/nearby.vue'),
         meta: {
-          title: 'Recommend'
+          title: 'Nearby'
         }
       },
       {

@@ -6,11 +6,12 @@
       >
         在路上
         <template #left>
-          <var-button round text color="transparent" text-color="#fff">
+          <var-button v-if="showLogo" round text color="transparent" text-color="#fff">
             <div class="logo">
               <img src="@/assets/images/logo.png" />
             </div>
           </var-button>
+          <var-icon v-else :size="30" name="chevron-left" @click="back" />
         </template>
         <template #right>
           <var-button round text color="transparent" text-color="#fff">
@@ -45,17 +46,26 @@
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import PageFooter from './page-footer.vue'
+import { isEmpty } from 'lodash'
 
 const router = useRouter()
 const route = useRoute()
 const active = ref('map')
 
 watch(route, () => {
-  active.value = route.matched[0].name as string
+  active.value = route?.matched[0].name as string
+})
+
+const showLogo = computed(() => {
+  return ['map', 'route', 'nearby', 'account'].includes(route?.name as string) && isEmpty(route.query)
 })
 
 const changeRoute = (active: string | number) => {
   router.push({ name: active as string })
+}
+
+const back = () => {
+  router.back()
 }
 
 </script>
